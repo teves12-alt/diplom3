@@ -1,31 +1,19 @@
 import pytest
-import allure
-import requests
 from selenium import webdriver
+
+from helpers import generate_user_data, register_user, login_user, delete_user
 from pages.main_page import MainPage
 from pages.login_page import LoginPage
 from pages.order_feed_page import OrderFeedPage
-from data import BASE_URL, REGISTER_URL, LOGIN_URL, DELETE_USER_URL
 
 
-@pytest.fixture(params=["chrome", "firefox"])
-def driver(request):
-    """Инициализация драйвера для Chrome и Firefox."""
-    browser_name = request.param
-
-    if browser_name == "chrome":
-        options = webdriver.ChromeOptions()
-        options.add_argument("--start-maximized")
-        browser = webdriver.Chrome(options=options)
-    elif browser_name == "firefox":
-        options = webdriver.FirefoxOptions()
-        browser = webdriver.Firefox(options=options)
-    else:
-        raise ValueError(f"Неподдерживаемый браузер: {browser_name}")
-
-    browser.get(BASE_URL)
-    yield browser
-    browser.quit()
+@pytest.fixture
+def driver():
+    options = webdriver.ChromeOptions()
+    options.add_argument("--window-size=1920,1080")
+    driver = webdriver.Chrome(options=options)
+    yield driver
+    driver.quit()
 
 
 @pytest.fixture
@@ -43,29 +31,28 @@ def order_feed_page(driver):
     return OrderFeedPage(driver)
 
 
-@pytest.fixture(scope="function")
-def auth_user(driver):
-    """Создаёт пользователя через API, логинит через UI, удаляет после теста."""
-    import random
-    import string
+@pytest.fixture
+def user_data():
+    return generate_user_data()
 
-    email = f"test_{''.join(random.choices(string.ascii_lowercase, k=6))}@yandex.ru"
-    password = "password123"
-    name = "Тестовый Пользователь"
 
-    # Регистрация через API
-    resp = requests.post(REGISTER_URL, json={
-        "email": email,
-        "password": password,
-        "name": name,
+@pytest.fixture
+def auth_user(driver, login_page, user_data):
+    register_user(user_data)
+    login_page.open()
+    login_page.login(user_data["email"], user_data["password"])
+
+    login_response = login_user({
+        "email": user_data["email"],
+        "password": user_data["password"],
     })
-    token = resp.json()["accessToken"]
+    token = login_response.json()["accessToken"]
+    user_data["token"] = token
 
-    # Логин через UI
-    login_page = LoginPage(driver)
-    login_page.login(email, password)
+    yield user_data
 
-    yield {"email": email, "password": password, "name": name, "token": token}
+    delete_user({"Authorization": token})
+
 
     # Очистка через API
     requests.delete(DELETE_USER_URL, headers={"Authorization": token})
