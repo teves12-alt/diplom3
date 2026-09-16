@@ -1,7 +1,7 @@
 import allure
 from pages.base_page import BasePage
 from locators.main_page_locators import MainPageLocators
-from data import BASE_URL
+from urls import BASE_URL
 
 
 class MainPage(BasePage):
@@ -9,7 +9,7 @@ class MainPage(BasePage):
 
     @allure.step("Открываем главную страницу")
     def open(self):
-        self.driver.get(BASE_URL)
+        self.open_url(BASE_URL)
 
     @allure.step("Кликаем «Конструктор»")
     def click_constructor_button(self):
@@ -41,19 +41,14 @@ class MainPage(BasePage):
 
     @allure.step("Получаем значение счётчика первого ингредиента")
     def get_first_ingredient_counter(self):
-        try:
-            return int(self.get_text(MainPageLocators.INGREDIENT_COUNTER))
-        except Exception:
-            return 0
+        return int(self.get_text(MainPageLocators.INGREDIENT_COUNTER))
 
     @allure.step("Добавляем первый ингредиент в заказ (drag-and-drop)")
     def add_ingredient_to_order(self):
-        from selenium.webdriver import ActionChains
-
-        ingredient = self.wait_for_element(MainPageLocators.INGREDIENT_CARD)
-        basket = self.wait_for_element(MainPageLocators.CONSTRUCTOR_BASKET)
-        actions = ActionChains(self.driver)
-        actions.drag_and_drop(ingredient, basket).perform()
+        self.drag_and_drop(
+            MainPageLocators.INGREDIENT_CARD,
+            MainPageLocators.CONSTRUCTOR_BASKET,
+        )
 
     @allure.step("Кликаем «Оформить заказ»")
     def click_order_button(self):
@@ -66,3 +61,4 @@ class MainPage(BasePage):
     @allure.step("Проверяем, видна ли кнопка «Оформить заказ»")
     def is_order_button_visible(self):
         return self.is_element_visible(MainPageLocators.ORDER_BUTTON)
+
