@@ -1,7 +1,7 @@
 import allure
 from pages.base_page import BasePage
 from locators.login_page_locators import LoginPageLocators
-from data import BASE_URL
+from urls import BASE_URL
 
 
 class LoginPage(BasePage):
@@ -9,7 +9,7 @@ class LoginPage(BasePage):
 
     @allure.step("Открываем страницу логина")
     def open(self):
-        self.driver.get(f"{BASE_URL}/login")
+        self.open_url(f"{BASE_URL}/login")
 
     @allure.step("Вводим email")
     def enter_email(self, email):
