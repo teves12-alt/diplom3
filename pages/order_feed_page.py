@@ -1,7 +1,7 @@
 import allure
 from pages.base_page import BasePage
 from locators.order_feed_locators import OrderFeedLocators
-from data import BASE_URL
+from urls import BASE_URL
 
 
 class OrderFeedPage(BasePage):
@@ -9,7 +9,7 @@ class OrderFeedPage(BasePage):
 
     @allure.step("Открываем ленту заказов")
     def open(self):
-        self.driver.get(f"{BASE_URL}/feed")
+        self.open_url(f"{BASE_URL}/feed")
 
     @allure.step("Получаем значение счётчика «Выполнено за всё время»")
     def get_total_counter(self):
@@ -21,5 +21,6 @@ class OrderFeedPage(BasePage):
 
     @allure.step("Получаем список номеров заказов в разделе «В работе»")
     def get_in_progress_order_numbers(self):
-        elements = self.driver.find_elements(*OrderFeedLocators.IN_PROGRESS_ORDER_NUMBERS)
+        elements = self.find_elements(OrderFeedLocators.IN_PROGRESS_ORDER_NUMBERS)
         return [el.text for el in elements if el.text.strip()]
+
