@@ -10,11 +10,9 @@ class TestOrderFeed:
 
     @allure.title("При создании нового заказа счётчик «Выполнено за всё время» увеличивается")
     def test_total_counter_increases(self, order_feed_page, auth_user):
-        # Запоминаем значение до создания заказа
         order_feed_page.open()
         initial_total = order_feed_page.get_total_counter()
 
-        # Создаём заказ через API (быстрее и надёжнее, чем через UI)
         token = auth_user["token"]
         ingredients_resp = requests.get(INGREDIENTS_URL)
         ingredient_ids = [item["_id"] for item in ingredients_resp.json()["data"][:2]]
@@ -26,7 +24,6 @@ class TestOrderFeed:
         )
         assert order_resp.status_code == 200
 
-        # Обновляем страницу и проверяем счётчик
         order_feed_page.open()
         new_total = order_feed_page.get_total_counter()
 
@@ -79,3 +76,4 @@ class TestOrderFeed:
             f"Номер заказа {order_number} не найден в разделе «В работе». "
             f"Текущие заказы в работе: {in_progress_orders}"
         )
+
